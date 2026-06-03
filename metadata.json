@@ -1,0 +1,6 @@
+{
+  "name": "텔레그램 매장 홍보 자동화 대시보드",
+  "description": "매장 매니저들을 위한 텔레그램 공개채널 홍보 플래너, AI 게시글 변조기 및 휴먼 로직 시뮬레이션 제어판",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
