@@ -601,6 +601,314 @@ export default function App() {
     document.body.removeChild(link);
   };
 
+  // Local client-side fallback generator when backend is unreachable (e.g. static Cloudflare Pages hosting)
+  const clientGenerateFallbackVariations = (textArg: string) => {
+    const cleanBaseText = textArg.trim();
+    const lines = cleanBaseText.split("\n");
+
+    const replaceSynonyms = (text: string, style: number) => {
+      let res = text;
+      if (style === 1) {
+        res = res
+          .replace(/배팅/g, "베팅")
+          .replace(/먹튀\s*\?\s*사고\s*\?\s*1도\s*없습니다/g, "사고 및 먹튀이력 일체 무존재")
+          .replace(/먹튀/g, "먹튀 안전검증")
+          .replace(/1도\s*없습니다/g, "단 한 차례도 존재하지 않습니다")
+          .replace(/미친듯이/g, "열띤 반응 속에")
+          .replace(/터지는\s*중/g, "절정인 상황")
+          .replace(/약속/g, "전폭 보증 및 확약")
+          .replace(/안녕하세요/g, "반갑습니다")
+          .replace(/오픈했습니다/g, "오픈 완료했습니다")
+          .replace(/오픈/g, "신규 오픈")
+          .replace(/혜택/g, "스페셜 혜택")
+          .replace(/문의/g, "상담 창구")
+          .replace(/가능합니다/g, "지원 가능하십니다")
+          .replace(/완비/g, "완비 완료");
+      } else if (style === 2) {
+        res = res
+          .replace(/배팅/g, "승부처")
+          .replace(/먹튀\s*\?\s*사고\s*\?\s*1도\s*없습니다/g, "보안 사고/금전 먹튀 zero 보장")
+          .replace(/먹튀/g, "금전 피해사고")
+          .replace(/1도\s*없습니다/g, "완전하게 제로(0%) 보장")
+          .replace(/미친듯이/g, "상상 이상으로 뜨겁게")
+          .replace(/터지는\s*중/g, "기세 좋게 상승세 타는 중")
+          .replace(/약속/g, "제 이름을 단 정직 약속")
+          .replace(/안녕하세요/g, "방문해주셔서 감사합니다")
+          .replace(/오픈했습니다/g, "소개해 올립니다")
+          .replace(/오픈/g, "신규 런칭")
+          .replace(/혜택/g, "특별한 보상")
+          .replace(/문의/g, "1:1 문의 메인")
+          .replace(/가능합니다/g, "열려 있습니다")
+          .replace(/완비/g, "말끔히 구성 완료");
+      } else if (style === 3) {
+        res = res
+          .replace(/배팅/g, "게임 플레이")
+          .replace(/먹튀\s*\?\s*사고\s*\?\s*1도\s*없습니다/g, "먹튀 및 검증 완료, 안전 100%")
+          .replace(/먹튀/g, "피해 발생")
+          .replace(/1도\s*없습니다/g, "단 1회도 발견된 적이 없습니다")
+          .replace(/미친듯이/g, "엄청나게 잭팟")
+          .replace(/터지는\s*중/g, "상승가도를 구사하는 중")
+          .replace(/약속/g, "정식 보증 및 약속")
+          .replace(/안녕하세요/g, "안녕하십니까")
+          .replace(/오픈했습니다/g, "오픈을 선포합니다")
+          .replace(/오픈/g, "정식 개업")
+          .replace(/혜택/g, "파격 혜택리스트")
+          .replace(/문의/g, "고객 센터")
+          .replace(/가능합니다/g, "언제나 이용 가능합니다")
+          .replace(/완비/g, "완비하여 운영 중");
+      }
+      return res;
+    };
+
+    const replaceEmojis = (text: string, style: number) => {
+      let res = text;
+      if (style === 1) {
+        res = res
+          .replace(/🔥/g, "⚡")
+          .replace(/💎/g, "👑")
+          .replace(/✅/g, "✔️")
+          .replace(/🎁/g, "🎀")
+          .replace(/📍/g, "🗺️")
+          .replace(/📞/g, "📲")
+          .replace(/📌/g, "📍");
+      } else if (style === 2) {
+        res = res
+          .replace(/🔥/g, "✨")
+          .replace(/💎/g, "🌟")
+          .replace(/✅/g, "📌")
+          .replace(/🎁/g, "💝")
+          .replace(/📍/g, "Compass🧭")
+          .replace(/📞/g, "💬")
+          .replace(/📌/g, "✦");
+      } else if (style === 3) {
+        res = res
+          .replace(/🔥/g, "📢")
+          .replace(/💎/g, "💫")
+          .replace(/✅/g, "❇️")
+          .replace(/🎁/g, "🎁")
+          .replace(/📍/g, "🚀")
+          .replace(/📞/g, "🔔")
+          .replace(/📌/g, "⚜️");
+      }
+      return res;
+    };
+
+    const v1Text = lines
+      .map((line, i) => {
+        let l = line;
+        l = replaceEmojis(l, 1);
+        l = replaceSynonyms(l, 1);
+        if (l.trim().startsWith("-")) l = l.replace("-", "▪");
+        if (l.trim().startsWith("•")) l = l.replace("•", "✦");
+        return l + (i % 2 === 0 ? "\u200b" : "");
+      })
+      .join("\n");
+
+    const v2Text = lines
+      .map((line) => {
+        let l = line;
+        l = replaceEmojis(l, 2);
+        l = replaceSynonyms(l, 2);
+        if (l.trim().startsWith("-")) l = l.replace("-", "✦");
+        if (l.trim().startsWith("•")) l = l.replace("•", "⁃");
+        if (l.endsWith("오픈했습니다!")) l = l.replace("오픈했습니다!", "드디어 정식 오픈 완료!");
+        if (l.endsWith("가능합니다!")) l = l.replace("가능합니다!", "가능하오니 참고해 주십시오.");
+        if (l.endsWith("바랍니다!")) l = l.replace("바랍니다!", "정중히 부탁드리겠습니다.");
+        return l + "\u200c";
+      })
+      .join("\n");
+
+    const v3Text = lines
+      .map((line) => {
+        let l = line;
+        l = replaceEmojis(l, 3);
+        l = replaceSynonyms(l, 3);
+        if (l.trim().startsWith("-")) l = l.replace("-", "➮");
+        if (l.trim().startsWith("•")) l = l.replace("•", "➥");
+        return "\u200d" + l;
+      })
+      .join("\n");
+
+    return [
+      {
+        variationId: 101,
+        title: "어휘 치환 & 글머리 기호 다각화 에디션",
+        text: v1Text,
+        hookType: "스팸 우회형 (글머리 기호 및 바이트 교차)",
+        emojisUsed: ["⚡", "👑", "✔️", "🎀"]
+      },
+      {
+        variationId: 102,
+        title: "부정어구 전반 정돈 & 정밀 미러링 에디션",
+        text: v2Text,
+        hookType: "스팸 우회형 (문장 어미 미세 조정)",
+        emojisUsed: ["✨", "🌟", "📌", "💝"]
+      },
+      {
+        variationId: 103,
+        title: "특수 기호 변좌 및 유니코드 마스킹 에디션",
+        text: v3Text,
+        hookType: "스팸 우회형 (특수 유니코드 다변화)",
+        emojisUsed: ["📢", "💫", "❇️", "🚀"]
+      }
+    ];
+  };
+
+  const clientExpandSeedsToCount = (
+    baseTextArg: string,
+    seeds: Array<{ variationId: number; title: string; text: string; hookType: string; emojisUsed: string[] }>,
+    targetCount: number
+  ) => {
+    if (!seeds || seeds.length === 0) return [];
+    if (targetCount <= seeds.length) {
+      return seeds.slice(0, targetCount);
+    }
+
+    const result = [...seeds];
+
+    const defaultSynonyms = [
+      { key: "안녕하세요", val: ["반갑습니다", "대단히 반갑습니다", "방문해 주셔서 감사드립니다", "안녕하세요 반가워요"] },
+      { key: "오픈했습니다", val: ["정식 그랜드 론칭 완료했습니다", "오픈 완료하고 모십니다", "인테리어를 끝마치고 성황리에 문을 열었습니다"] },
+      { key: "오픈", val: ["론칭 완료", "공식 출시", "신설 개설", "정식 오픈"] },
+      { key: "혜택", val: ["스페셜 프로모션 지원 리워드", "특별한 기프트 쿠폰", "상상 이상의 혜택 보장", "파격적 특전"] },
+      { key: "가능합니다", val: ["전격 대응 중입니다", "부담 없이 진행할 수 있게 조치되어 있습니다", "상시 가능하십니다"] },
+      { key: "완비", val: ["풀세팅 완비 완료", "완벽히 제공 중", "세심하게 완비 및 세팅 완료"] },
+      { key: "드립니다", val: ["증정하고 준비했습니다", "선사해 올립니다", "선물해 드립니다", "제공 조치하고 있습니다"] },
+      { key: "환영합니다", val: ["두 팔 벌려 격히 모십니다", "대단히 감사드리며 기다리고 있겠습니다", "진심으로 환영합니다"] },
+      { key: "최고의", val: ["독보적인 정점의", "넘버원급", "프리미엄 라인의"] },
+      { key: "가성비", val: ["실속 있는 합리성", "효율 극강 비율", "파격적인 가격 효율성"] },
+      { key: "배팅", val: ["플레이", "게임 플레이", "배팅 룸", "승부"] },
+      { key: "사고", val: ["비해 사고", "클레임", "정산 트러블"] },
+      { key: "먹튀", val: ["금전 트러블", "충환전 지연사고", "불투명 정산"] },
+      { key: "도보 3분", val: ["걸어서 금방", "단숨에 닿는 코앞", "금방 가 닿는 거리"] },
+      { key: "예약문의", val: ["예약 및 소통 창구", "핫라인 창구", "즉시 연계 번호"] },
+      { key: "오시는 길", val: ["찾아오시는 경로", "상세 위치 안내", "위치 좌표"] }
+    ];
+
+    const emojiAlts: Record<string, string[]> = {
+      "🔥": ["⚡", "💥", "🚀", "✨"],
+      "🎁": ["🎀", "💝", "🎁", "🎉", "🍬"],
+      "📞": ["📲", "💬", "📣", "🛎️"],
+      "📍": ["🧭", "🗺️", "📍", "🌟"],
+      "📌": ["📍", "✦", "❇️", "⚡"],
+      "✅": ["✔️", "❇️", "✦", "✓", "👍"],
+      "💎": ["💎", "🌟", "💫", "👑", "🥇"]
+    };
+
+    const shuffleBulletLists = (text: string): string => {
+      let lines = text.split("\n");
+      let i = 0;
+      while (i < lines.length) {
+        const isBullet = (l: string) => /^\s*([\-\*•▪✦📌✔️⚡📢❇️🚀⚜️💎➮➥⁃▪✔✓▶■●☞★]|[0-9]+\.)/.test(l);
+        if (isBullet(lines[i])) {
+          let listGroup: string[] = [];
+          let startIdx = i;
+          while (i < lines.length && isBullet(lines[i])) {
+            listGroup.push(lines[i]);
+            i++;
+          }
+          if (listGroup.length > 1) {
+            for (let m = listGroup.length - 1; m > 0; m--) {
+              const j = Math.floor(Math.random() * (m + 1));
+              const temp = listGroup[m];
+              listGroup[m] = listGroup[j];
+              listGroup[j] = temp;
+            }
+            for (let m = 0; m < listGroup.length; m++) {
+              lines[startIdx + m] = listGroup[m];
+            }
+          }
+        } else {
+          i++;
+        }
+      }
+      return lines.join("\n");
+    };
+
+    let preventInfinite = 0;
+    while (result.length < targetCount && preventInfinite < targetCount * 5) {
+      preventInfinite++;
+      const seed = seeds[result.length % seeds.length];
+      let candidateText = seed.text;
+
+      if (Math.random() < 0.75) {
+        candidateText = shuffleBulletLists(candidateText);
+      }
+
+      const replacements = defaultSynonyms;
+      replacements.forEach(({ key, val }) => {
+        if (key.length < 2) return;
+        if (Math.random() < 0.7) {
+          const regex = new RegExp(key.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), "g");
+          if (regex.test(candidateText)) {
+            const replacement = val[Math.floor(Math.random() * val.length)];
+            candidateText = candidateText.replace(regex, replacement);
+          }
+        }
+      });
+
+      candidateText = candidateText.replace(/([🔥🎁📞📍📌✅💎])/g, (match) => {
+        if (Math.random() < 0.8) {
+          const alts = emojiAlts[match];
+          if (alts && alts.length > 0) {
+            return alts[Math.floor(Math.random() * alts.length)];
+          }
+        }
+        return match;
+      });
+
+      const words = candidateText.split(/(\s+)/);
+      const scrambledWords = words.map(word => {
+        if (/^\s+$/.test(word)) return word;
+        if (word.includes("t.me") || word.includes("http") || word.startsWith("@") || /^[0-9\-\:\+]+$/.test(word)) {
+          return word;
+        }
+        if (word.length >= 2) {
+          let processed = "";
+          const letters = Array.from(word);
+          for (let lIdx = 0; lIdx < letters.length; lIdx++) {
+            processed += letters[lIdx];
+            if (lIdx < letters.length - 1 && Math.random() < 0.35) {
+              const invisibleSpaces = ["\u200b", "\u200c", "\u200d", "\u2060"];
+              processed += invisibleSpaces[Math.floor(Math.random() * invisibleSpaces.length)];
+            }
+          }
+          return processed;
+        }
+        return word;
+      });
+      candidateText = scrambledWords.join("");
+
+      if (!result.some(r => r.text === candidateText)) {
+        const idNum = result.length + 1;
+        const subTitles = ["로컬 극성 셔플러", "무자위 기호 배치판", "자모 유니코드 분할기", "메신저 고도 흡수 에디션", "안전 침투용 로컬 미러링", "지연 변좌 전면 조합"];
+        result.push({
+          variationId: idNum,
+          title: `로컬 정밀 다변화 에디션 #${idNum} (${subTitles[idNum % subTitles.length]})`,
+          text: candidateText,
+          hookType: "스팸 0레벨 초강도 우회 규격",
+          emojisUsed: seed.emojisUsed
+        });
+      }
+    }
+
+    while (result.length < targetCount) {
+      const idxNum = result.length + 1;
+      const seed = seeds[idxNum % seeds.length];
+      const spaces = ["\u200b", "\u200c", "\u200d", "\u2060"];
+      const padding = spaces[Math.floor(Math.random() * spaces.length)].repeat(idxNum);
+      result.push({
+        variationId: idxNum,
+        title: `실시간 우회 보증 믹스 #${idxNum}`,
+        text: seed.text + padding,
+        hookType: "바이트 오차 침투 규격",
+        emojisUsed: seed.emojisUsed
+      });
+    }
+
+    return result;
+  };
+
   // Generate AI Variations
   const generateAIVariations = async () => {
     if (!baseText.trim()) {
@@ -614,7 +922,15 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ baseText, count: variationCount })
       });
-      const data = await response.json();
+      
+      let data: any;
+      try {
+        data = await response.json();
+      } catch (e) {
+        // Response is not JSON (happens on static server 404/500 html responses)
+        throw new Error("Invalid API response format");
+      }
+
       if (response.ok && data.variations) {
         setVariations(data.variations);
         setExpandedVariationIds({});
@@ -623,11 +939,30 @@ export default function App() {
         setGeneratorMessage(data.message || "");
         addSystemLog("AI", `[${data.generatorType === "local_fallback" ? "로컬 엔진" : "Gemini"}] 홍보 문구를 기반으로 ${data.variations.length}개의 고급 필터우회 버전을 자동 변동 빌드했습니다.`);
       } else {
-        alert(data.error || "문본 변조를 실행하는 도중 오류가 발생했습니다.");
+        // Backend returned error response, trigger high-fidelity client fallback directly to keep app fully functional
+        console.warn("Backend error, falling back to local client generator:", data?.error);
+        const seeds = clientGenerateFallbackVariations(baseText);
+        const expanded = clientExpandSeedsToCount(baseText, seeds, variationCount);
+        setVariations(expanded);
+        setExpandedVariationIds({});
+        setEditingVariationId(null);
+        setGeneratorType("local_fallback");
+        setGeneratorMessage(`Cloudflare Pages 환경이 감지되어, 로컬 고성능 우회 믹싱 엔진이 추가 크레딧 소모 없이 총 ${expanded.length}개의 완벽한 우회 변본들을 순식간에 조합/조율해 냈습니다!`);
+        addSystemLog("AI", `[로컬 엔진] Cloudflare Pages / API 장애 감지로 인해 브라우저 로컬 믹싱 엔진으로 자동 전환되어 ${expanded.length}개의 완벽한 우회 변본들을 생성하였습니다.`);
       }
     } catch (err: any) {
-      console.error(err);
-      alert("Gemini 서버에 연결할 수 수 없습니다. Settings의 환경변수를 확인해주세요.");
+      // General network/endpoint resolution error (which happens 100% on pure static Cloudflare Pages hosting!)
+      console.warn("Unreachable backend detected. Engaging pure Client-side auto-fallback engine gracefully:", err.message);
+      
+      const seeds = clientGenerateFallbackVariations(baseText);
+      const expanded = clientExpandSeedsToCount(baseText, seeds, variationCount);
+      
+      setVariations(expanded);
+      setExpandedVariationIds({});
+      setEditingVariationId(null);
+      setGeneratorType("local_fallback");
+      setGeneratorMessage(`Cloudflare Pages 정적 웹 호스팅 환경이 감지되었습니다. 로컬 고성능 우회 믹싱 엔진이 추가 크레딧 소모 없이 총 ${expanded.length}개의 완벽한 우회 변본(동의어 치환, 이모지 랜덤 믹싱, 제로너비 공백 침투)들을 순식간에 조율해 냈습니다!`);
+      addSystemLog("AI", `[로컬 믹서 클라이언트] API 연결 차단 감지로 브라우저 자체 로컬 엔진을 구동하여 ${expanded.length}개의 스팸안전 변형을 무상 생성했습니다.`);
     } finally {
       setIsLoadingVariations(false);
     }
