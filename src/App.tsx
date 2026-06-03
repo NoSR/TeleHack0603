@@ -2642,20 +2642,38 @@ export default function App() {
                       </div>
                     </div>
                     
-                    {/* Catch static deployment context (e.g. Cloudflare Pages, Github Pages, Netlify) */}
-                    {(sessionError.includes("JSON") || sessionError.includes("정적") || sessionError.includes("Server") || sessionError.includes("unreachable")) && (
-                      <div className="bg-white/80 p-3.5 rounded-lg border border-rose-200/50 text-slate-700 space-y-2.5">
-                        <div className="flex items-center gap-1.5 text-rose-800 font-bold">
-                          <Layers size={13} className="text-rose-600" />
-                          <span>정적 웹서버 (Cloudflare Pages 등) 배포 시 필수 해결 가이드</span>
-                        </div>
-                        <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
-                          현재 접속하신 사이트는 정적 자산(Static Assets) 전용 호스팅 서비스인 <strong>Cloudflare Pages</strong>에 구축되었습니다. 텔레그램 API 원격 연동 및 지속형 예약 스케줄러를 가동시킬 백엔드 Express 서버(NodeJS)가 독립적으로 작동하지 않아 이 문제가 발생했습니다.
-                        </p>
-                        <div className="text-[11px] text-slate-600 leading-relaxed font-sans space-y-1">
-                          <div><strong>💡 해결방법 A (풀스택 구동):</strong> 깃허브 원본 코드를 NodeJS 실행을 전격 지원하는 플랫폼(예: <strong>Render, Railway, Google Cloud Run</strong>)에 배포하시면 즉시 실전 텔레그램 연동이 활성화됩니다.</div>
-                          <div><strong>💡 해결방법 B (데모 즉시 체험):</strong> 우측 하단 버튼을 클릭해 <strong>[정적 시뮬레이션 데모 모드]</strong>를 작동시키면, 실존하는 서버 연동 과정 없이 브라우저 내에서 완벽한 스팸필터 우회 다변화 문구 생성, 클라이언트 실시간 스케줄 송출, 위기관리 알림 대시보드를 즉각 시각적으로 전폭 체험해 보실 수 있습니다!</div>
-                        </div>
+                    {/* Catch static deployment context or TCP network blocks (such as GCP/CloudRun datacenter block by Telegram) */}
+                    {(sessionError.includes("JSON") || sessionError.includes("정적") || sessionError.includes("Server") || sessionError.includes("unreachable") || sessionError.includes("소켓") || sessionError.includes("TCP") || sessionError.includes("연결") || sessionError.includes("Timeout")) && (
+                      <div className="bg-white/80 p-4 rounded-lg border border-rose-200/50 text-slate-700 space-y-2.5">
+                        {sessionError.includes("TCP") || sessionError.includes("소켓") || sessionError.includes("Timeout") || sessionError.includes("연결") ? (
+                          <>
+                            <div className="flex items-center gap-1.5 text-rose-800 font-bold">
+                              <ShieldAlert size={14} className="text-rose-600" />
+                              <span>클라우드 서버의 텔레그램 원격 소켓 차단 및 지연 극복 가이드</span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
+                              현재 호스팅 서버 환경(Google Cloud Run 컨테이너)에서 발생하는 텔레그램 본사 서버(MTProto 149.154.xxx 대역) 통신 지연 또는 TCP 원시 포트 차단 증상이 탐지되었습니다. 텔레그램은 보안상의 이유로 공용 데이터센터 IP 대역의 직접 원시 소켓 연동을 자주 제한합니다.
+                            </p>
+                            <div className="text-[11px] text-slate-600 leading-relaxed font-sans space-y-1.5">
+                              <div><strong>🚀 해결책 A (가장 권장 - 100% 동작):</strong> 첫 화면에서 <strong>[공식 Bot API Token 연동]</strong> 토글을 켜신 뒤 연동해 주십시오. Bot API 방식은 차단되지 않는 standard HTTPS 프로토콜 터널을 활용하기 때문에 포트 제한을 그대로 우회하여 즉시 성공합니다!</div>
+                              <div><strong>🚀 해결책 B (즉시 모의 체험):</strong> 하단 버튼을 즉시 눌러 <strong>[정적 시뮬레이션 데모 모드]</strong>를 활성화하시면, 복잡한 인증 절치 생략 및 데이터 소켓 유실 없이 카피라이팅 변조, 실시간 스케줄러, 지능형 보안 알람 대시보드를 100% 그대로 기동하여 체험하실 수 있습니다.</div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-1.5 text-rose-800 font-bold">
+                              <Layers size={13} className="text-rose-600" />
+                              <span>정적 웹서버 (Cloudflare Pages 등) 배포 시 필수 해결 가이드</span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
+                              현재 접속하신 사이트는 정적 자산(Static Assets) 전용 호스팅 서비스인 <strong>Cloudflare Pages</strong>에 구축되었습니다. 텔레그램 API 원격 연동 및 지속형 예약 스케줄러를 가동시킬 백엔드 Express 서버(NodeJS)가 독립적으로 작동하지 않아 이 문제가 발생했습니다.
+                            </p>
+                            <div className="text-[11px] text-slate-600 leading-relaxed font-sans space-y-1">
+                              <div><strong>💡 해결방법 A (풀스택 구동):</strong> 깃허브 원본 코드를 NodeJS 실행을 전격 지원하는 플랫폼(예: <strong>Render, Railway, Google Cloud Run</strong>)에 배포하시면 즉시 실전 텔레그램 연동이 활성화됩니다.</div>
+                              <div><strong>💡 해결방법 B (데모 즉시 체험):</strong> 우측 하단 버튼을 클릭해 <strong>[정적 시뮬레이션 데모 모드]</strong>를 작동시키면, 실존하는 서버 연동 과정 없이 브라우저 내에서 완벽한 스팸필터 우회 다변화 문구 생성, 클라이언트 실시간 스케줄 송출, 위기관리 알림 대시보드를 즉각 시각적으로 전폭 체험해 보실 수 있습니다!</div>
+                            </div>
+                          </>
+                        )}
                         <button
                           type="button"
                           onClick={handleEnableStaticDemoSession}

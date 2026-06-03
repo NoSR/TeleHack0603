@@ -8,6 +8,14 @@ import { StringSession } from "telegram/sessions";
 
 dotenv.config();
 
+// Global uncaught exception handlers to prevent low-level GramJS TCP socket crashes from shutting down the server
+process.on("uncaughtException", (err) => {
+  console.error("CRITICAL: Uncaught Exception caught to prevent server crash:", err);
+});
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("CRITICAL: Unhandled Rejection caught to prevent server crash:", reason);
+});
+
 // Global map to hold active in-progress login clients
 const activeLogins = new Map<string, { client: TelegramClient; phoneCodeHash: string }>();
 
@@ -687,21 +695,44 @@ ${baseText}
 
       console.log(`[MTProto Custom Login] Request code for ${cleanPhone} (API ID: ${apiId})`);
 
-      // Initialize real TelegramClient session
+      // Initialize real TelegramClient session with fewer retries to avoid long hangs
       const session = new StringSession("");
       const client = new TelegramClient(session, Number(apiId), apiHash, {
-        connectionRetries: 5,
+        connectionRetries: 2,
+        timeout: 5000,
       });
 
-      await client.connect();
+      // Wrap connect and sendCode in a timeout promise to handle TCP block/blackhole gracefully
+      const connectionPromise = async () => {
+        await client.connect();
+        const resCode = await client.sendCode(
+          {
+            apiId: Number(apiId),
+            apiHash: apiHash,
+          },
+          cleanPhone
+        );
+        return resCode;
+      };
 
-      const result = await client.sendCode(
-        {
-          apiId: Number(apiId),
-          apiHash: apiHash,
-        },
-        cleanPhone
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("TELEGRAM_SOCKET_TIMEOUT")), 7500)
       );
+
+      let result: any;
+      try {
+        result = await Promise.race([connectionPromise(), timeoutPromise]);
+      } catch (raceErr: any) {
+        try {
+          await client.disconnect();
+        } catch (_) {}
+        
+        if (raceErr.message === "TELEGRAM_SOCKET_TIMEOUT" || (raceErr.message && (raceErr.message.includes("Timeout") || raceErr.message.includes("connect")))) {
+          throw new Error("텔레그램 서버(MTProto 149.154.167.50 대역)와의 TCP 소켓 연결 수립이 7.5초 내에 완료되지 못했습니다. 클라우드 호스팅 컨테이너의 아웃바운드 포트 방화벽 차단이나, 텔레그램 본사에서 GCP Cloud Run 등 공용 데이터센터 IP 대역의 원시 소켓 연동을 수동 차단했기 때문입니다.\n\n💡 해결 방법:\n1. 텔레그램 봇 모드 활성화인 [공식 Bot API Token 연동] 스위치를 활성화하고 API 토큰을 연동해 보거나,\n2. 하단 버튼의 [정적 시뮬레이션 데모 모드]를 간편하게 켜보시면 백엔드 없이 모든 마케팅 기능을 완벽 시뮬레이트 하여 사용해 보실 수 있습니다!");
+        } else {
+          throw raceErr;
+        }
+      }
 
       // Store in memory mapping
       activeLogins.set(cleanPhone, {
