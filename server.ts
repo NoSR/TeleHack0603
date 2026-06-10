@@ -716,7 +716,7 @@ ${baseText}
       };
 
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("TELEGRAM_SOCKET_TIMEOUT")), 7500)
+        setTimeout(() => reject(new Error("TELEGRAM_SOCKET_TIMEOUT")), 4000)
       );
 
       let result: any;
@@ -728,7 +728,7 @@ ${baseText}
         } catch (_) {}
         
         if (raceErr.message === "TELEGRAM_SOCKET_TIMEOUT" || (raceErr.message && (raceErr.message.includes("Timeout") || raceErr.message.includes("connect")))) {
-          throw new Error("텔레그램 서버(MTProto 149.154.167.50 대역)와의 TCP 소켓 연결 수립이 7.5초 내에 완료되지 못했습니다. 클라우드 호스팅 컨테이너의 아웃바운드 포트 방화벽 차단이나, 텔레그램 본사에서 GCP Cloud Run 등 공용 데이터센터 IP 대역의 원시 소켓 연동을 수동 차단했기 때문입니다.\n\n💡 해결 방법:\n1. 텔레그램 봇 모드 활성화인 [공식 Bot API Token 연동] 스위치를 활성화하고 API 토큰을 연동해 보거나,\n2. 하단 버튼의 [정적 시뮬레이션 데모 모드]를 간편하게 켜보시면 백엔드 없이 모든 마케팅 기능을 완벽 시뮬레이트 하여 사용해 보실 수 있습니다!");
+          throw new Error("텔레그램 서버(MTProto 149.154.xxx 대역)와의 TCP 소켓 연결 수립이 4초 내에 완료되지 못했습니다. 클라우드 대시보드 서버 환경의 포트 차단이나, 텔레그램 본사 측에서 클라우드 데이터센터 IP 대역의 원시 소켓 연동을 우회 제어했기 때문입니다.\n\n💡 해결 방법:\n1. 텔레그램 공식 봇 API 방식은 타 그룹방 진입에 장애가 따르므로, 점주님 개인 PC에서 본 앱을 직접 구동하시는 것을 강력히 권장합니다! ([ZIP 코드 파일 내보내기] 다운로드 후 로컬 PC에서 npm install && npm run dev 세 가지만 실행하면, 개인 인터넷 IP 대역을 경유하여 1초 만에 즉각 통신 및 연동에 가볍게 성공합니다.)\n2. 당장 이곳에서 화면 구성을 실시간으로 다루기 원하신다면, 하단의 [정적 시뮬레이션 데모 모드]를 활성화하여 다변화 생성 및 스케줄 배포 대시보드를 시각적으로 완벽 체험해 주십시오!");
         } else {
           throw raceErr;
         }

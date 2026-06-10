@@ -149,7 +149,7 @@ export default function App() {
     return {
       apiId: "",
       apiHash: "",
-      phoneNumber: "",
+      phoneNumber: "+82 10 6837 7792",
       botToken: "",
       useBotApi: false,
       isAuthorized: false
@@ -158,7 +158,7 @@ export default function App() {
 
   const [inputApiId, setInputApiId] = useState<string>(session.apiId || "31001139");
   const [inputApiHash, setInputApiHash] = useState<string>(session.apiHash || "3424497d3ae84800fc4818771d6d7062");
-  const [inputPhoneNumber, setInputPhoneNumber] = useState<string>(session.phoneNumber || "");
+  const [inputPhoneNumber, setInputPhoneNumber] = useState<string>(session.phoneNumber || "+82 10 6837 7792");
   const [inputBotToken, setInputBotToken] = useState<string>(session.botToken || "");
   const [isUseBotApi, setIsUseBotApi] = useState<boolean>(session.useBotApi || false);
   
@@ -808,13 +808,19 @@ export default function App() {
         })
       });
       
+      let responseText = "";
+      try {
+        responseText = await response.text();
+      } catch (textErr) {
+        throw new Error("서버와의 통신 도중 응답 데이터 취득에 실패했습니다.");
+      }
+
       let data: any;
       try {
-        data = await response.json();
+        data = JSON.parse(responseText);
       } catch (jsonErr) {
-        throw new Error(
-          "정적 호스팅 감지: 백엔드 API가 JSON 대신 올바르지 않은 응답을 반환했습니다. Cloudflare Pages 같은 정적 서버 환경에서는 NodeJS Express 서버가 작동하지 않으므로 수동 원격 연결 API를 즉시 기동할 수 없습니다. 대신 하단 해결 가이드를 통해 '정적 시뮬레이션 데모 모드'로 접속하시면 모든 플래너 및 발송 기능을 100% 상세 시험해 보실 수 있습니다!"
-        );
+        const cleanText = responseText.substring(0, 300).trim();
+        throw new Error(`백엔드 서버 API 인증코드 요청 실패 (비-JSON 응답 수신)\n\n● HTTP 상태코드: ${response.status}\n● 서버 응답 원본: ${cleanText || "데이터 없음"}\n\n💡 안내: Cloud Run 등 클라우드 서버 환경에서 NodeJS Express 백엔드가 구동 중인지 또는 포트 3000 통신이 누락되지 않고 잘 접속되는지 사전에 확인해 주십시오.`);
       }
 
       if (!response.ok) {
@@ -870,13 +876,19 @@ export default function App() {
         })
       });
 
+      let responseText = "";
+      try {
+        responseText = await response.text();
+      } catch (textErr) {
+        throw new Error("서버와의 통신 도중 응답 데이터 취득에 실패했습니다.");
+      }
+
       let data: any;
       try {
-        data = await response.json();
+        data = JSON.parse(responseText);
       } catch (jsonErr) {
-        throw new Error(
-          "정적 서버 감지: 코드 인가 도중 백엔드 자격 검사 응답이 원활치 않았습니다. Cloudflare Pages 등 정적 서버 환경에서는 텔레그램 실시간 인가 기능이 지원되지 않으므로 '데모 가상 로그인 모드'를 통해 모의 체험을 부탁드립니다."
-        );
+        const cleanText = responseText.substring(0, 300).trim();
+        throw new Error(`백엔드 서버 API 인증코드 승인 실패 (비-JSON 응답 수신)\n\n● HTTP 상태코드: ${response.status}\n● 서버 응답 원본: ${cleanText || "데이터 없음"}\n\n💡 안내: Cloud Run 등 클라우드 서버 환경에서 NodeJS Express 백엔드가 구동 중인지 또는 포트 3000 통신이 누락되지 않고 잘 접속되는지 사전에 확인해 주십시오.`);
       }
 
       if (!response.ok) {
@@ -1584,14 +1596,22 @@ export default function App() {
               body: JSON.stringify(requestBody)
             });
 
+            let responseText = "";
             try {
-              result = await response.json();
+              responseText = await response.text();
+            } catch (textErr) {
+              throw new Error("서버와의 통신 도중 응답 본문을 읽는 데 실패했습니다.");
+            }
+
+            try {
+              result = JSON.parse(responseText);
             } catch (jsonErr) {
-              throw new Error("정적 서버 감지: JSON 응답 포맷 오류");
+              const cleanText = responseText.substring(0, 300).trim();
+              throw new Error(`백엔드 서버 API 수동 원격 요청 실패 (비-JSON 응답 수신)\n\n● HTTP 상태코드: ${response.status}\n● 서버 응답 원본: ${cleanText || "데이터 없음"}\n\n💡 안내: Cloud Run 서비스 기동 중 혹은 텔레그램 서버(MTProto / Bot API)로의 원시 소켓 연동 과정에서 네트워크 장애가 있었는지 사전에 확인해 주십시오.`);
             }
 
             if (!response.ok) {
-              throw new Error(result?.error || "네트워크 오류");
+              throw new Error(result?.error || `서버 내부 처리 오류 (코드: ${response.status})`);
             }
           }
 
